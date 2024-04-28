@@ -24,6 +24,7 @@
 (define-map dsc-minted {user: principal} uint)
 (define-data-var collateral-token principal 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
 
+(define-fungible-token fungible-token)
 ;; Functions and Checks
 ;; (define-read-only (is-allowed-token (token principal))
 ;;   (is-some (map-get? price-feeds (collateral-token token)))
@@ -48,9 +49,24 @@
 ;;   )
 ;; )
 
+
+(define-read-only (get-account-collateral-value (account principal))
+  (let ((collateral-amount (ft-get-balance fungible-token account)))
+    ;; (let ((price-per-token (contract-call? .oracle get-price))) ;; assuming get-price returns price as USD per token
+      (ok (* collateral-amount))
+    )
+  )
+
+(define-read-only (get-token-amount-from-usd (usd-amount uint))
+    (contract-call? .oracle get-price)
+  )
+
+
 ;; More functions can be added similar to the above template to handle collateral deposit, redemption, and liquidation processes.
 
-
+(define-read-only (fetch-price)
+ (contract-call? .oracle get-price)
+)
 
 
 (define-read-only (get-precision)

@@ -27,7 +27,13 @@ passes = ['check_checker']
 path = 'contracts/engine.clar'
 clarity_version = 2
 epoch = 2.5
-depends_on = 'my-token'
+depends_on = ['my-token', 'oracle']
+passes = ['check_checker']
+
+[contracts.oracle]
+path = 'contracts/oracle.clar'
+clarity_version = 2
+epoch = 2.5
 passes = ['check_checker']
 
 [repl.analysis.check_checker]
