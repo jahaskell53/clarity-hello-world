@@ -4,7 +4,7 @@
 (define-data-var last-block uint u0)
 ;; (define-data-var price uint u0)
 
-(define-constant oracle-owner 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)
+(define-constant oracle-owner 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 
 
 ;; for now, only allow owner, but eventually:

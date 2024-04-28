@@ -133,7 +133,7 @@
   )
 )
 ;; Mint new tokens.
-(define-private (mint! (account principal) (amount uint))
+(define-public (mint! (account principal) (amount uint))
   (if (<= amount u0)
       (err false)
       (begin

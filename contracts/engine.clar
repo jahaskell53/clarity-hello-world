@@ -11,18 +11,18 @@
 (define-constant LIQUIDATION_THRESHOLD u50)
 (define-constant LIQUIDATION_BONUS u10)
 (define-constant LIQUIDATION_PRECISION u100)
-(define-constant MIN_HEALTH_FACTOR 1000000000000000000) ;; Equivalent to 1e18 in Solidity
+(define-constant MIN_HEALTH_FACTOR u1000000000000000000) ;; Equivalent to 1e18 in Solidity
 (define-constant PRECISION 1000000000000000000) ;; Equivalent to 1e18
 (define-constant ADDITIONAL_FEED_PRECISION 10000000000) ;; Equivalent to 1e10
 (define-constant FEED_PRECISION 100000000) ;; Equivalent to 1e8
 
 ;; State Variables
-(define-data-var dsc-address principal 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
-(define-data-var collateral-price-feed principal 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
+(define-data-var dsc-address principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+(define-data-var collateral-price-feed principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 ;; (define-map price-feeds {collateral-token: principal} principal)
 (define-map collateral-deposited {user: principal} {amount: uint})
 (define-map dsc-minted {user: principal} uint)
-(define-data-var collateral-token principal 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
+(define-data-var collateral-token principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 
 (define-fungible-token fungible-token)
 ;; Functions and Checks
@@ -49,6 +49,71 @@
 ;;   )
 ;; )
 
+;; Deposit collateral and mint DSC
+(define-public (deposit-and-mint (amount uint))
+    (let ((caller tx-sender))
+        (begin
+            ;; Assume collateral is stk-token, handled internally
+            (try! (ft-transfer? stk-token amount caller (as-contract tx-sender)))
+            (try! (mint! amount))
+            (ok true)
+        )
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Burn DSC and manage collateral
+(define-public (burn-and-manage-collateral (amount uint))
+    (let ((caller tx-sender))
+        (begin
+            (asserts! (>= (get-collateral caller) amount) (err u401)) ;; Insufficient collateral
+            (asserts! (is-health-factor-ok caller) (err u402)) ;; Health factor check
+            (map-set user-collateral caller (- (get-collateral caller) amount))
+            (try! (ft-burn? stk-token amount caller))
+            (ok true)
+        )
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper functions
+
+(define-fungible-token stk-token)
+(define-data-var total-supply uint u0)
+(define-data-var total-collateral uint u0)
+(define-map user-balances principal uint)
+(define-map user-collateral principal uint)
+(define-data-var oracle-contract principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle)
+
+
+;; Mint tokens
+(define-public (mint! (amount uint))
+    (let ((current-supply (var-get total-supply)))
+        (var-set total-supply (+ current-supply amount))
+        (ft-mint? stk-token amount tx-sender)
+    )
+)
+
+;; Get user collateral
+(define-read-only (get-collateral (user principal))
+    (default-to u0 (map-get? user-collateral user))
+)
+
+;; Health factor calculation
+(define-read-only (is-health-factor-ok (user principal))
+    (let ((collateral (get-collateral user))
+          (debts (ft-get-balance stk-token user)))
+        (>= (* collateral LIQUIDATION_THRESHOLD) (* debts MIN_HEALTH_FACTOR))
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Initialize contract
+(begin
+    (var-set total-supply u0)
+    (var-set total-collateral u0)
+)
+
 
 (define-read-only (get-account-collateral-value (account principal))
   (let ((collateral-amount (ft-get-balance fungible-token account)))
@@ -56,7 +121,7 @@
       (ok (* collateral-amount))
     )
   )
-
+;; TODO: fix this
 (define-read-only (get-token-amount-from-usd (usd-amount uint))
     (contract-call? .oracle get-price)
   )
