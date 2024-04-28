@@ -17,12 +17,12 @@
 (define-constant FEED_PRECISION 100000000) ;; Equivalent to 1e8
 
 ;; State Variables
-(define-data-var dsc-address principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
-(define-data-var collateral-price-feed principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+(define-data-var stableswap-address principal 'SP2WATQX70C2B6BS3YP0SA3288ZVAXJ5NBT74KERY.stableswap)
+;; (define-data-var collateral-price-feed principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 ;; (define-map price-feeds {collateral-token: principal} principal)
 (define-map collateral-deposited {user: principal} {amount: uint})
-(define-map dsc-minted {user: principal} uint)
-(define-data-var collateral-token principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+(define-map stableswap-minted {user: principal} uint)
+(define-data-var collateral-token principal 'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.token-abtc)
 
 (define-fungible-token fungible-token)
 ;; Functions and Checks
@@ -35,21 +35,21 @@
 )
 
 ;; Constructor-like Function
-;; (define-public (initialize (token-addresses (list 10 principal)) (price-feed-addresses (list 10 principal)) (dsc-address principal))
+;; (define-public (initialize (token-addresses (list 10 principal)) (price-feed-addresses (list 10 principal)) (stableswap-address principal))
 ;;   (begin
 ;;     ;; Check lengths match
 ;;     ;; (asserts! (eq? (len token-addresses) (len price-feed-addresses)) ERR_TOKEN_ADDRESSES_AND_PRICE_FEED_ADDRESSES_AMOUNTS_DONT_MATCH)
 ;;     ;; Initialize price feeds
 ;;     (map zip token-addresses price-feed-addresses (lambda (token price-feed) 
 ;;       (map-set price-feeds (collateral-token token) price-feed)))
-;;     ;; Set DSC address
-;;     (var-set dsc-address dsc-address)
+;;     ;; Set stableswap address
+;;     (var-set stableswap-address stableswap-address)
 ;;     ;; Set collateral tokens (not in this example due to Clarity's current limitations)
 ;;     (ok true)
 ;;   )
 ;; )
 
-;; Deposit collateral and mint DSC
+;; Deposit collateral and mint stableswap
 (define-public (deposit-and-mint (amount uint))
     (let ((caller tx-sender))
         (begin
@@ -62,7 +62,7 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Burn DSC and manage collateral
+;; Burn stableswap and manage collateral
 (define-public (burn-and-manage-collateral (amount uint))
     (let ((caller tx-sender))
         (begin
@@ -83,7 +83,7 @@
 (define-data-var total-collateral uint u0)
 (define-map user-balances principal uint)
 (define-map user-collateral principal uint)
-(define-data-var oracle-contract principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle)
+(define-data-var oracle-contract principal 'SP2WATQX70C2B6BS3YP0SA3288ZVAXJ5NBT74KERY.stableswap-oracle)
 
 
 ;; Mint tokens
@@ -121,7 +121,7 @@
       (ok (* collateral-amount))
     )
   )
-;; TODO: fix this
+
 (define-read-only (get-token-amount-from-usd (usd-amount uint))
     (contract-call? .oracle get-price)
   )
