@@ -10,14 +10,14 @@ path = 'contracts/hello-world.clar'
 clarity_version = 2
 epoch = 2.5
 
-[contracts.my-nft]
-path = 'contracts/my-nft.clar'
+[contracts.my-token]
+path = 'contracts/my-token.clar'
 clarity_version = 2
 epoch = 2.5
-depends_on = ['nft-trait']
+depends_on = ['token-trait']
 
-[contracts.nft-trait]
-path = 'contracts/nft-trait.clar'
+[contracts.token-trait]
+path = 'contracts/token-trait.clar'
 clarity_version = 2
 epoch = 2.5
 [repl.analysis]
