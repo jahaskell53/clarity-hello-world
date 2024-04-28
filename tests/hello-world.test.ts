@@ -1,4 +1,3 @@
-
 import { describe, expect, it } from "vitest";
 
 const accounts = simnet.getAccounts();
@@ -12,6 +11,17 @@ const address1 = accounts.get("wallet_1")!;
 describe("example tests", () => {
   it("ensures simnet is well initalised", () => {
     expect(simnet.blockHeight).toBeDefined();
+  });
+
+  it("ensures can call count-up", () => {
+    const { result } = simnet.callPublicFn(
+      "hello-world",
+      "count-up",
+      [],
+      address1
+    );
+    // expect result to be ok
+    expect(result).toBeTruthy();
   });
 
   // it("shows an example", () => {

@@ -6,7 +6,7 @@
 
 ;; traits
 ;;
-(define-trait nft-trait
+(define-trait sip-010-trait
   (
     ;; Last token ID, limited to uint range
     (get-last-token-id () (response uint uint))
@@ -21,6 +21,8 @@
     (transfer (uint principal principal) (response bool uint))
   )
 )
+
+
 
 ;; token definitions
 ;;
