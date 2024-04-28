@@ -1,3 +1,4 @@
+import { principalCV, stringCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 
 const accounts = simnet.getAccounts();
@@ -22,6 +23,18 @@ describe("example tests", () => {
     );
     // expect result to be ok
     expect(result).toBeTruthy();
+
+    // then get the counter value
+    // const argument = stringCV(address1, "utf8");
+    const newArgument = principalCV(address1);
+    const { result: counter } = simnet.callReadOnlyFn(
+      "hello-world",
+      "get-count",
+      [newArgument],
+      address1
+    );
+    // expect counter to be 1
+    expect(counter).toBeUint(1);
   });
 
   // it("shows an example", () => {
